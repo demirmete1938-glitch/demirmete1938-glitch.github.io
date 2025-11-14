@@ -1,12 +1,14 @@
-body { font-family: Arial, sans-serif; margin:0; padding:0; background:#fafafa; }
-.navbar { display:flex; justify-content:space-between; padding:10px; background:#fff; border-bottom:1px solid #ccc; }
-.feed, #storyContainer { max-width:100%; padding:0 10px; box-sizing:border-box; }
-.post img { width:100%; height:auto; }
-.button { padding:5px 10px; margin:5px; cursor:pointer; background:#3897f0; color:white; border:none; border-radius:5px; }
-#storyContainer { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scroll-behavior:smooth; padding:10px 0; }
-.post { margin-bottom:20px; border:1px solid #eee; border-radius:5px; padding:5px; background:#fff; }
-@media(max-width:600px){.navbar h1{font-size:22px}.post-header strong{font-size:14px}}
-.fade-enter { opacity:0; transform:translateY(20px); transition:all 0.4s ease; }
-.fade-enter-active { opacity:1; transform:translateY(0); }
-.slide-left { transform:translateX(100%); opacity:0; transition:all 0.4s ease; }
-.slide-left-active { transform:translateX(0); opacity:1; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Helvetica Neue',sans-serif;background:#fafafa;color:#262626;}
+header{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;background:white;box-shadow:0 1px 5px rgba(0,0,0,0.1);position:sticky;top:0;z-index:100;}
+.logo{font-size:1.8em;font-weight:bold;color:#ff004f;}
+nav button{margin:0 5px;padding:8px 12px;border:none;background:#eee;border-radius:6px;cursor:pointer;transition:0.2s;}
+nav button:hover{background:#ddd;}
+#userMenu span{margin-right:10px;font-weight:bold;}
+main{display:flex;max-width:1200px;margin:20px auto;}
+aside#sidebar{width:250px;padding:20px;background:white;border-radius:10px;margin-right:20px;box-shadow:0 1px 5px rgba(0,0,0,0.1);}
+aside#sidebar img{width:100%;border-radius:50%;margin-bottom:10px;}
+section#content{flex:1;display:flex;flex-direction:column;}
+.post, .reel, .chatMsg{background:white;border-radius:10px;padding:15px;margin-bottom:15px;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+button{cursor:pointer;}
+footer{text-align:center;padding:15px;background:#fff;margin-top:20px;box-shadow:0 -1px 5px rgba(0,0,0,0.05);}

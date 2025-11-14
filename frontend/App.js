@@ -1,137 +1,172 @@
-const root = document.getElementById("root");
-let currentUserId = "KULLANICI_ID"; 
-const adminPassword = "192892828#+#??#?#(#¿(##?(#+2928292829)";
+import { io } from "https://cdn.socket.io/4.7.2/socket.io.esm.min.js";
+const socket = io("http://localhost:5000");
 
-// Animasyon fonksiyonu
-function animateElement(el,type){
-  if(type==="fade"){ el.classList.add("fade-enter"); setTimeout(()=>el.classList.add("fade-enter-active"),10);}
-  if(type==="slide-left"){ el.classList.add("slide-left"); setTimeout(()=>el.classList.add("slide-left-active"),10);}
+let currentUserId = null;
+let currentUserName = null;
+
+// Login
+async function login(){
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+  
+  const res = await fetch("http://localhost:5000/login",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({username,password})
+  });
+
+  const msgDiv = document.getElementById("loginMsg");
+  if(res.status===200){
+    const user = await res.json();
+    currentUserId = user._id;
+    currentUserName = user.username;
+    document.getElementById("currentUser").textContent = user.username;
+    document.getElementById("loginDiv").style.display="none";
+    document.getElementById("registerDiv").style.display="none";
+    document.getElementById("mainDiv").style.display="block";
+    loadProfile(user);
+    loadFeed();
+  }else{
+    const text = await res.text();
+    msgDiv.textContent = text;
+  }
 }
 
-// Login ekranı
-function showLoginScreen(){
-  root.innerHTML = `
-    <div style="text-align:center;margin-top:50px;">
-      <h1>MeteGram Giriş</h1>
-      <input id="username" placeholder="Kullanıcı Adı"><br><br>
-      <input id="password" type="password" placeholder="Şifre"><br><br>
-      <button id="loginBtn" class="button">Giriş Yap</button>
-      <p style="margin-top:20px; font-size:14px;">
-        Kurucu musun? <span id="adminLink" style="color:#3897f0; cursor:pointer;">Buyur kral, geç gir</span>
-      </p>
-    </div>
-  `;
+document.getElementById("loginBtn").onclick = login;
 
-  document.getElementById("loginBtn").onclick = async ()=>{
-    const username=document.getElementById("username").value;
-    const password=document.getElementById("password").value;
-    const res = await fetch("http://localhost:5000/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,password})});
-    if(res.ok){ const user = await res.json(); currentUserId = user._id; showUserInterface();}
-    else alert("Kullanıcı adı veya şifre hatalı kral!");
-  };
+// Register
+document.getElementById("registerBtn").onclick = async ()=>{
+  const username = document.getElementById("regUsername").value;
+  const password = document.getElementById("regPassword").value;
+  const res = await fetch("http://localhost:5000/register",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({username,password})
+  });
+  const msgDiv = document.getElementById("regMsg");
+  if(res.status===200){
+    const user = await res.json();
+    msgDiv.textContent = "Kayıt başarılı! Giriş yapabilirsiniz.";
+    document.getElementById("registerDiv").style.display="none";
+    document.getElementById("loginDiv").style.display="block";
+  }else{
+    const text = await res.text();
+    msgDiv.textContent = text;
+  }
+};
 
-  document.getElementById("adminLink").onclick = ()=> showAdminLogin();
-}
+// Logout
+document.getElementById("logoutBtn").onclick = ()=>{
+  currentUserId = null;
+  currentUserName = null;
+  document.getElementById("mainDiv").style.display="none";
+  document.getElementById("loginDiv").style.display="block";
+};
 
-// Kullanıcı arayüzü
-function showUserInterface(){
-  root.innerHTML=`
-    <div class="navbar"><h1>MeteGram</h1><div>🔔 ✉️</div></div>
-    <div id="storyContainer"></div>
-    <div id="profile"></div>
-    <div class="feed" id="feed"></div>
-  `;
-  animateElement(root,"fade");
-  loadStories(); loadProfile(); loadFeed(); loadExploreButton();
-}
-
-// Admin login
-function showAdminLogin(){
-  const pwd = prompt("Kurucu şifresini gir kral:");
-  if(pwd===adminPassword) showAdminPanel();
-  else alert("Şifre yanlış kral!");
-}
-
-// Admin paneli
-function showAdminPanel(){
-  root.innerHTML = `
-    <h1>MeteGram Kurucu Paneli</h1>
-    <div><input id="userId" placeholder="Kullanıcı ID"><button id="deleteUser" class="button">Kullanıcıyı Sil</button></div>
-    <div><input id="targetId" placeholder="Kullanıcı ID"><input id="followers" placeholder="Takipçi miktarı"><button id="boostFollowers" class="button">Takipçi Bas</button></div>
-  `;
-  animateElement(root,"slide-left");
-  document.getElementById("deleteUser").onclick = async ()=>{
-    const userId = document.getElementById("userId").value;
-    await fetch("http://localhost:5000/founder/delete-user",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId,role:"founder"})});
-    alert("Kullanıcı silindi kral!");
-  };
-  document.getElementById("boostFollowers").onclick = async ()=>{
-    const targetId=document.getElementById("targetId").value;
-    const amount=Number(document.getElementById("followers").value);
-    await fetch("http://localhost:5000/founder/boost-followers",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:targetId,amount,role:"founder"})});
-    alert("Takipçi artırıldı kral!");
-  };
-}
-
-// Profile
-async function loadProfile(){
-  const profileEl=document.getElementById("profile");
-  const res=await fetch(`http://localhost:5000/login`); // basit demo
-  profileEl.innerHTML=`<h3>Kullanıcı: ${currentUserId}</h3>`;
+// Load user profile info
+function loadProfile(user){
+  document.getElementById("profilePic").src = user.profilePic || "https://via.placeholder.com/150";
+  document.getElementById("followers").textContent = `Takipçi: ${user.followers}`;
+  document.getElementById("following").textContent = `Takip Edilen: ${user.following.length}`;
 }
 
 // Feed
 async function loadFeed(){
-  const feedEl=document.getElementById("feed");
-  const res=await fetch("http://localhost:5000/feed");
-  const posts=await res.json();
-  feedEl.innerHTML="";
+  const res = await fetch("http://localhost:5000/feed");
+  const posts = await res.json();
+  const content = document.getElementById("mainDiv");
+  content.innerHTML="<h3>Feed</h3>";
   posts.forEach(p=>{
-    const postEl=document.createElement("div");
-    postEl.className="post";
-    postEl.style.opacity=0; postEl.style.transform="translateY(20px)"; postEl.style.transition="all 0.4s ease";
-    postEl.innerHTML=`<div class="post-header"><strong>${p.userId.username}</strong></div><img src="${p.image}" alt="post"><div class="post-footer">❤️ ${p.likes}</div>`;
-    feedEl.appendChild(postEl);
-    setTimeout(()=>{postEl.style.opacity=1; postEl.style.transform="translateY(0)";},50);
+    const div = document.createElement("div");
+    div.className = "post";
+    div.innerHTML = `<b>${p.userId.username}</b><p>${p.caption}</p>
+                     <img src="${p.image}" width="100%">
+                     <button onclick='likePost("${p._id}")'>Beğen (${p.likes})</button>`;
+    content.appendChild(div);
   });
 }
 
-// Story
-async function loadStories(){
-  const container=document.getElementById("storyContainer");
-  const res=await fetch("http://localhost:5000/story/feed");
-  const stories=await res.json();
-  container.innerHTML="";
-  stories.forEach(s=>{
-    const storyEl=document.createElement("div");
-    storyEl.style.minWidth="60px"; storyEl.style.marginRight="10px"; storyEl.style.textAlign="center";
-    storyEl.style.scrollSnapAlign="center"; storyEl.style.transition="transform 0.3s, box-shadow 0.3s";
-    storyEl.innerHTML=`<img src="${s.image}" style="width:60px;height:60px;border-radius:50%;border:2px solid #3897f0"><p style="font-size:12px">${s.userId.username}</p>`;
-    storyEl.onmouseenter=()=>{storyEl.style.transform="scale(1.1)"; storyEl.style.boxShadow="0 4px 8px rgba(0,0,0,0.2)";};
-    storyEl.onmouseleave=()=>{storyEl.style.transform="scale(1)"; storyEl.style.boxShadow="none";};
-    container.appendChild(storyEl);
+window.likePost = async (id)=>{
+  await fetch("http://localhost:5000/post/like",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({postId:id})
   });
-}
+  alert("Post beğenildi!");
+};
 
-// Keşfet butonu
-function loadExploreButton(){
-  const btn=document.createElement("button");
-  btn.textContent="Keşfet"; btn.className="button";
-  btn.onclick=async ()=>{
-    const res=await fetch("http://localhost:5000/explore");
-    const posts=await res.json();
-    const feedEl=document.getElementById("feed");
-    feedEl.innerHTML="<h2>Keşfet</h2>";
-    posts.forEach(p=>{
-      const postEl=document.createElement("div"); postEl.className="post";
-      postEl.style.opacity=0; postEl.style.transform="translateY(20px)"; postEl.style.transition="all 0.4s ease";
-      postEl.innerHTML=`<div class="post-header"><strong>${p.userId.username}</strong></div><img src="${p.image}" alt="post"><div class="post-footer">❤️ ${p.likes}</div>`;
-      feedEl.appendChild(postEl);
-      setTimeout(()=>{postEl.style.opacity=1; postEl.style.transform="translateY(0)";},50);
-    });
+// Reels
+document.getElementById("reelsBtn").onclick = async ()=>{
+  const res = await fetch("http://localhost:5000/reel/feed");
+  const reels = await res.json();
+  const content = document.getElementById("mainDiv");
+  content.innerHTML="<h3>Reels</h3>";
+  reels.forEach(r=>{
+    const div = document.createElement("div");
+    div.className = "reel";
+    div.innerHTML = `<b>${r.userId.username}</b><p>${r.caption}</p>
+                     <video src="${r.videoUrl}" controls width="100%" autoplay loop muted></video>
+                     <button onclick='likeReel("${r._id}")'>Beğen (${r.likes})</button>`;
+    content.appendChild(div);
+  });
+});
+
+window.likeReel = async (id)=>{
+  await fetch("http://localhost:5000/reel/like",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({reelId:id})
+  });
+  alert("Reel beğenildi!");
+};
+
+// Chat
+document.getElementById("chatBtn").onclick = ()=>{
+  const content = document.getElementById("mainDiv");
+  content.innerHTML = `<h3>Chat</h3>
+                       <div id='messages' style='max-height:400px;overflow-y:auto;'></div>
+                       <input id='msgInput' placeholder='Mesaj...'>
+                       <button id='sendMsg'>Gönder</button>`;
+  
+  socket.emit("join_chat", currentUserId);
+
+  socket.on("receive_message",(msg)=>{
+    const div = document.createElement("div");
+    div.className = "chatMsg";
+    div.textContent = `${msg.senderId}: ${msg.text}`;
+    document.getElementById("messages").appendChild(div);
+  });
+
+  document.getElementById("sendMsg").onclick = ()=>{
+    const text = document.getElementById("msgInput").value;
+    if(!text) return;
+    socket.emit("send_message",{ chatId:currentUserId, senderId:currentUserId, text });
+    document.getElementById("msgInput").value="";
   };
-  document.querySelector(".navbar div").appendChild(btn);
-}
+};
 
-// Başlangıç
-showLoginScreen();
+// Founder login (modal)
+document.getElementById("founderLoginBtn").onclick = ()=>{
+  const pass = prompt("Kurucu şifresini gir:");
+  if(pass === "192892828#+#??#?#(#¿(##?(#+2928292829"){
+    alert("Kurucu giriş başarılı!");
+    // Admin panel açılabilir burada
+  }else{
+    alert("Hatalı şifre kral!");
+  }
+};
+
+// Keşfet (basit örnek)
+document.getElementById("discoverBtn").onclick = async ()=>{
+  const res = await fetch("http://localhost:5000/feed"); // şimdilik tüm postlar
+  const posts = await res.json();
+  const content = document.getElementById("mainDiv");
+  content.innerHTML="<h3>Keşfet</h3>";
+  posts.forEach(p=>{
+    const div = document.createElement("div");
+    div.className = "post";
+    div.innerHTML = `<b>${p.userId.username}</b><p>${p.caption}</p>
+                     <img src="${p.image}" width="100%">`;
+    content.appendChild(div);
+  });
+};

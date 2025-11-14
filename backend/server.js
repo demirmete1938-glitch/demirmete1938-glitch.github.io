@@ -1,81 +1,65 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const http = require("http");
-const { Server } = require("socket.io");
+// backend/server.js
+import express from "express";
+import dotenv from "dotenv";
+import http from "http";
+import { Server } from "socket.io";
+import path from "path";
+import cors from "cors";
 
-const User = require("./models/User");
-const Post = require("./models/Post");
-const Story = require("./models/Story");
-const Reel = require("./models/Reel");
-const Chat = require("./models/Chat");
+import { connectDB } from "./config/db.js";
+import authRoutes from "./routes/auth.js";
+import postsRoutes from "./routes/posts.js";
+import reelsRoutes from "./routes/reels.js";
+import messagesRoutes from "./routes/messages.js";
+import adminRoutes from "./routes/admin.js";
+import uploadRoutes from "./routes/upload.js";
+
+import Message from "./models/Message.js";
+
+dotenv.config();
+
+const PORT = process.env.PORT || 5000;
+
+await connectDB(process.env.MONGO_URI);
 
 const app = express();
+app.use(cors());
+app.use(express.json());
+app.use('/uploads', express.static(path.join(process.cwd(), 'backend/public_uploads')));
+
+// routes
+app.use("/api/auth", authRoutes);
+app.use("/api/posts", postsRoutes);
+app.use("/api/reels", reelsRoutes);
+app.use("/api/messages", messagesRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/upload", uploadRoutes);
+
+// minimal root
+app.get("/", (req, res) => res.send("MeteGram backend alive"));
+
+// socket.io realtime
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-app.use(express.json());
-app.use(cors());
+io.on("connection", (socket) => {
+  console.log("socket connected", socket.id);
 
-// MongoDB
-mongoose.connect("mongodb://127.0.0.1:27017/metegram", { useNewUrlParser:true, useUnifiedTopology:true });
-
-// Login
-app.post("/login", async (req,res)=>{
-  const { username,password } = req.body;
-  const user = await User.findOne({ username,password });
-  if(user) res.send(user);
-  else res.status(401).send("Hatalı kullanıcı adı veya şifre");
-});
-
-// Feed
-app.get("/feed", async (req,res)=>{
-  const posts = await Post.find().sort({ createdAt:-1 }).populate("userId","username");
-  res.send(posts);
-});
-
-// Story
-app.post("/story/create", async (req,res)=>{ const story = new Story(req.body); await story.save(); res.send(story); });
-app.get("/story/feed", async (req,res)=>{ const stories = await Story.find({ expiresAt: { $gt:new Date() } }).populate("userId","username"); res.send(stories); });
-
-// Reels
-app.post("/reel/create", async (req,res)=>{ const reel = new Reel(req.body); await reel.save(); res.send(reel); });
-app.get("/reel/feed", async (req,res)=>{ const reels = await Reel.find().sort({ createdAt:-1 }).populate("userId","username"); res.send(reels); });
-app.post("/reel/like", async (req,res)=>{ const { reelId } = req.body; const reel = await Reel.findById(reelId); reel.likes+=1; await reel.save(); res.send("Reel beğenildi"); });
-
-// Chat Socket.IO
-io.on("connection", socket => {
-  console.log("Yeni kullanıcı bağlandı: "+socket.id);
-
-  socket.on("join_chat", (userId)=>{ socket.join(userId); });
-
-  socket.on("send_message", async (data)=>{
-    const { chatId, senderId, text } = data;
-    const chat = await Chat.findById(chatId);
-    chat.messages.push({ sender: senderId, text });
-    await chat.save();
-    chat.participants.forEach(uid => { io.to(uid.toString()).emit("receive_message",{ chatId, senderId, text }); });
+  socket.on("join_room", (room) => {
+    socket.join(room);
   });
 
-  socket.on("disconnect", ()=>{ console.log("Kullanıcı ayrıldı: "+socket.id); });
+  socket.on("send_message", async (data) => {
+    // Save message
+    const { chatId, senderId, text, attachments } = data;
+    const msg = new Message({ chatId, senderId, text, attachments: attachments || [] });
+    await msg.save();
+    io.to(chatId).emit("receive_message", msg);
+  });
+
+  socket.on("disconnect", () => {
+    // console.log("disconnect", socket.id);
+  });
 });
 
-// Follow
-app.post("/user/follow", async (req,res)=>{
-  const { userId,targetId } = req.body;
-  const user = await User.findById(userId);
-  const target = await User.findById(targetId);
-  if(!user.following.includes(targetId)){ user.following.push(targetId); target.followers+=1; }
-  else{ user.following = user.following.filter(id=>id!=targetId); target.followers-=1; }
-  await user.save(); await target.save();
-  res.send("Takip güncellendi");
-});
-
-// Like post
-app.post("/post/like", async (req,res)=>{ const { postId } = req.body; const post = await Post.findById(postId); post.likes+=1; await post.save(); res.send("Beğeni eklendi"); });
-
-// Founder admin
-app.post("/founder/delete-user", async (req,res)=>{ if(req.body.role!=="founder") return res.status(403).send("Yetkin yok kral!"); await User.findByIdAndDelete(req.body.userId); await Post.deleteMany({ userId:req.body.userId }); res.send("Kullanıcı silindi"); });
-app.post("/founder/boost-followers", async (req,res)=>{ if(req.body.role!=="founder") return res.status(403).send("Yetkin yok kral!"); const user = await User.findById(req.body.userId); if(!user) return res.status(404).send("Kullanıcı yok kral!"); user.followers+=Number(req.body.amount); await user.save(); res.send("Takipçi artırıldı"); });
-
-server.listen(5000, ()=>console.log("Backend 5000 portta Socket.IO ile çalışıyor kral"));
+server.listen(PORT, () => console.log(`MeteGram backend running on ${PORT}`));

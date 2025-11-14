@@ -25,9 +25,9 @@
   <main>
     <aside id="sidebar">
       <h3>Profil</h3>
-      <img id="profilePic" src="" alt="Profil" />
-      <p id="followers"></p>
-      <p id="following"></p>
+      <img id="profilePic" src="https://via.placeholder.com/150" alt="Profil" />
+      <p id="followers">Takipçi: 0</p>
+      <p id="following">Takip Edilen: 0</p>
       <button id="founderLoginBtn">Kurucu Girişi</button>
     </aside>
 
@@ -37,8 +37,19 @@
         <input id="username" placeholder="Kullanıcı Adı">
         <input id="password" placeholder="Şifre" type="password">
         <button id="loginBtn">Giriş</button>
+        <p>Hesabın yok mu? <button id="showRegisterBtn">Kayıt Ol</button></p>
         <div id="loginMsg"></div>
       </div>
+
+      <div id="registerDiv" style="display:none;">
+        <h2>Kayıt Ol</h2>
+        <input id="regUsername" placeholder="Kullanıcı Adı">
+        <input id="regPassword" placeholder="Şifre" type="password">
+        <button id="registerBtn">Kayıt Ol</button>
+        <p>Zaten hesabın var mı? <button id="showLoginBtn">Giriş Yap</button></p>
+        <div id="regMsg"></div>
+      </div>
+
       <div id="mainDiv" style="display:none;">
         <!-- Feed / Reels / Chat içerikleri JS ile gelecek -->
       </div>

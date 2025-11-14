@@ -1,14 +1,14 @@
+<!-- frontend/index.html -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MeteGram</title>
-<link rel="stylesheet" href="style.css">
-<script type="module" src="App.js" defer></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MeteGram</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
+  <header class="topbar">
     <div class="logo">MeteGram</div>
     <nav>
       <button id="feedBtn">Feed</button>
@@ -16,48 +16,53 @@
       <button id="chatBtn">Chat</button>
       <button id="discoverBtn">Keşfet</button>
     </nav>
-    <div id="userMenu">
-      <span id="currentUser"></span>
-      <button id="logoutBtn">Çıkış</button>
+    <div class="menu">
+      <span id="currentUser">Misafir</span>
+      <button id="founderLoginBtn">Kurucu</button>
+      <button id="logoutBtn" style="display:none;">Çıkış</button>
     </div>
   </header>
 
-  <main>
-    <aside id="sidebar">
-      <h3>Profil</h3>
-      <img id="profilePic" src="https://via.placeholder.com/150" alt="Profil" />
+  <main class="layout">
+    <aside class="sidebar">
+      <img id="profilePic" src="https://via.placeholder.com/120" alt="profil" />
+      <h3 id="profileName">Misafir</h3>
       <p id="followers">Takipçi: 0</p>
       <p id="following">Takip Edilen: 0</p>
-      <button id="founderLoginBtn">Kurucu Girişi</button>
     </aside>
 
-    <section id="content">
-      <div id="loginDiv">
-        <h2>Giriş Yap</h2>
-        <input id="username" placeholder="Kullanıcı Adı">
-        <input id="password" placeholder="Şifre" type="password">
-        <button id="loginBtn">Giriş</button>
-        <p>Hesabın yok mu? <button id="showRegisterBtn">Kayıt Ol</button></p>
-        <div id="loginMsg"></div>
+    <section class="content" id="content">
+      <div id="authBox">
+        <div id="loginDiv">
+          <h2>Giriş Yap</h2>
+          <input id="username" placeholder="Kullanıcı Adı" />
+          <input id="password" placeholder="Şifre" type="password" />
+          <button id="loginBtn">Giriş</button>
+          <p>Hesabın yok mu? <button id="showRegisterBtn">Kayıt Ol</button></p>
+          <div id="loginMsg" class="msg"></div>
+        </div>
+
+        <div id="registerDiv" style="display:none;">
+          <h2>Kayıt Ol</h2>
+          <input id="regUsername" placeholder="Kullanıcı Adı" />
+          <input id="regPassword" placeholder="Şifre" type="password" />
+          <button id="registerBtn">Kayıt Ol</button>
+          <p>Zaten hesabın var mı? <button id="showLoginBtn">Giriş Yap</button></p>
+          <div id="regMsg" class="msg"></div>
+        </div>
       </div>
 
-      <div id="registerDiv" style="display:none;">
-        <h2>Kayıt Ol</h2>
-        <input id="regUsername" placeholder="Kullanıcı Adı">
-        <input id="regPassword" placeholder="Şifre" type="password">
-        <button id="registerBtn">Kayıt Ol</button>
-        <p>Zaten hesabın var mı? <button id="showLoginBtn">Giriş Yap</button></p>
-        <div id="regMsg"></div>
-      </div>
-
-      <div id="mainDiv" style="display:none;">
-        <!-- Feed / Reels / Chat içerikleri JS ile gelecek -->
+      <div id="mainApp" style="display:none;">
+        <!-- dynamic content -->
       </div>
     </section>
   </main>
 
-  <footer>
-    <p>&copy; 2025 MeteGram</p>
+  <footer class="footer">
+    <p>&copy; MeteGram</p>
   </footer>
+
+  <script type="module" src="App.js"></script>
+  <script type="module" src="extra.js"></script>
 </body>
-</html>
+    </html>

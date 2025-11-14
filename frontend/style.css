@@ -1,16 +1,20 @@
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Helvetica Neue',sans-serif;background:#fafafa;color:#262626;}
-header{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;background:white;box-shadow:0 1px 5px rgba(0,0,0,0.1);position:sticky;top:0;z-index:100;}
-.logo{font-size:1.8em;font-weight:bold;color:#ff004f;}
-nav button{margin:0 5px;padding:8px 12px;border:none;background:#eee;border-radius:6px;cursor:pointer;transition:0.2s;}
-nav button:hover{background:#ddd;}
-#userMenu span{margin-right:10px;font-weight:bold;}
-main{display:flex;max-width:1200px;margin:20px auto;}
-aside#sidebar{width:250px;padding:20px;background:white;border-radius:10px;margin-right:20px;box-shadow:0 1px 5px rgba(0,0,0,0.1);}
-aside#sidebar img{width:100%;border-radius:50%;margin-bottom:10px;}
-section#content{flex:1;display:flex;flex-direction:column;}
-.post, .reel, .chatMsg{background:white;border-radius:10px;padding:15px;margin-bottom:15px;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
-button{cursor:pointer;transition:0.2s;}
-button:hover{opacity:0.8;}
-footer{text-align:center;padding:15px;background:#fff;margin-top:20px;box-shadow:0 -1px 5px rgba(0,0,0,0.05);}
-input{display:block;margin:10px 0;padding:10px;width:100%;border-radius:6px;border:1px solid #ccc;}
+/* frontend/style.css */
+:root{--bg:#fafafa;--card:#fff;--muted:#888}
+*{box-sizing:border-box}
+body{font-family:Inter, system-ui, Arial; background:var(--bg); margin:0; color:#111}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--card);box-shadow:0 1px 6px rgba(0,0,0,0.06)}
+.logo{font-weight:700;color:#e91e63}
+.layout{display:flex;max-width:1100px;margin:20px auto;padding:0 10px}
+.sidebar{width:240px;background:var(--card);padding:15px;border-radius:8px;margin-right:20px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.content{flex:1}
+img{max-width:100%}
+.post,.reel,.chatBox{background:var(--card);padding:12px;border-radius:8px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+input{padding:10px;border-radius:8px;border:1px solid #ddd;width:100%;margin:6px 0}
+button{padding:8px 12px;border-radius:8px;border:none;background:#1976d2;color:#fff;cursor:pointer}
+button.secondary{background:#666}
+.msg{color:crimson;margin-top:8px}
+.footer{text-align:center;padding:14px;color:var(--muted)}
+@media (max-width:800px){
+  .layout{flex-direction:column;padding:10px}
+  .sidebar{width:100%;margin-bottom:12px}
+}

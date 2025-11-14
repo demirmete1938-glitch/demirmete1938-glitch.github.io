@@ -1,0 +1,12 @@
+body { font-family: Arial, sans-serif; margin:0; padding:0; background:#fafafa; }
+.navbar { display:flex; justify-content:space-between; padding:10px; background:#fff; border-bottom:1px solid #ccc; }
+.feed, #storyContainer { max-width:100%; padding:0 10px; box-sizing:border-box; }
+.post img { width:100%; height:auto; }
+.button { padding:5px 10px; margin:5px; cursor:pointer; background:#3897f0; color:white; border:none; border-radius:5px; }
+#storyContainer { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scroll-behavior:smooth; padding:10px 0; }
+.post { margin-bottom:20px; border:1px solid #eee; border-radius:5px; padding:5px; background:#fff; }
+@media(max-width:600px){.navbar h1{font-size:22px}.post-header strong{font-size:14px}}
+.fade-enter { opacity:0; transform:translateY(20px); transition:all 0.4s ease; }
+.fade-enter-active { opacity:1; transform:translateY(0); }
+.slide-left { transform:translateX(100%); opacity:0; transition:all 0.4s ease; }
+.slide-left-active { transform:translateX(0); opacity:1; }
